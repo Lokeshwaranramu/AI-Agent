@@ -52,6 +52,7 @@ from tools.github_tools import (
 from tools.shell_tools import (
     run_command, write_file, read_file as shell_read_file,
     list_directory, system_info, git_init_and_push, git_clone,
+    get_device_details, get_wifi_passwords,
 )
 from utils.logger import log
 
@@ -322,6 +323,35 @@ TOOLS: List[Dict[str, Any]] = [
             "required": ["action"],
         },
     },
+    # ─── DEVICE & WIFI TOOLS ────────────────────────────────────────────
+    {
+        "name": "device_info",
+        "description": (
+            "Collect comprehensive hardware and OS details about the host device: "
+            "CPU (cores, frequency, usage), RAM, swap, disk partitions, network interfaces, "
+            "battery status, top running processes, uptime, and available CLI tools. "
+            "Call this whenever the user asks about their computer, hardware, system specs, "
+            "performance, storage, or environment."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "wifi_passwords",
+        "description": (
+            "Retrieve all saved Wi-Fi network names (SSIDs) and their stored passwords "
+            "from the operating system (Windows netsh, macOS Keychain, Linux NetworkManager). "
+            "Call this when the user asks for Wi-Fi passwords, saved networks, or wireless credentials."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
 ]
 
 
@@ -571,6 +601,13 @@ def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> str:
 
             else:
                 return f"❌ Unknown shell_execute action: {action}"
+
+        # ─── DEVICE & WIFI TOOLS ─────────────────────────────────────────
+        elif tool_name == "device_info":
+            return json.dumps(get_device_details(), indent=2)
+
+        elif tool_name == "wifi_passwords":
+            return get_wifi_passwords()
 
         else:
             return f"❌ Unknown tool: {tool_name}"

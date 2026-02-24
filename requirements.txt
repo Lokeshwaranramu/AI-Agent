@@ -1,6 +1,9 @@
 # Core AI
 anthropic>=0.40.0
 
+# System / Hardware
+psutil>=5.9.0
+
 # Environment
 python-dotenv>=1.0.0
 
