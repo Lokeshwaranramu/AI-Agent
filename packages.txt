@@ -1,0 +1,3 @@
+# System-level packages for Streamlit Community Cloud
+# (Python packages go in requirements.txt as usual)
+# No system packages required for this app
