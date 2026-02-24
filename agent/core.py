@@ -195,27 +195,10 @@ TOOLS: List[Dict[str, Any]] = [
             "required": ["platform", "topic"],
         },
     },
-    # ─── WEB SEARCH TOOLS ────────────────────────────────────────────────────
+    # ─── ANTHROPIC NATIVE WEB SEARCH (server-side, no extra API key needed) ──
     {
+        "type": "web_search_20250305",
         "name": "web_search",
-        "description": (
-            "Search the live web for any query. Uses Tavily (if API key set) or DuckDuckGo. "
-            "Always call this for questions needing current data, documentation, tutorials, "
-            "error solutions, pricing, or any real-world facts. Do NOT rely on training data alone."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Search query"},
-                "num_results": {"type": "integer", "description": "Number of results (default 10)"},
-                "search_depth": {
-                    "type": "string",
-                    "enum": ["basic", "advanced"],
-                    "description": "Search depth for Tavily (default 'advanced')",
-                },
-            },
-            "required": ["query"],
-        },
     },
     {
         "name": "forum_search",
@@ -440,12 +423,11 @@ def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> str:
             return json.dumps(result, indent=2)
 
         # ─── WEB SEARCH TOOLS ───────────────────────────────────────────────
+        # web_search is handled server-side by Anthropic (web_search_20250305).
+        # If it somehow reaches here, fall back to DuckDuckGo.
         elif tool_name == "web_search":
-            return web_search(
-                query=tool_input["query"],
-                num_results=tool_input.get("num_results", 10),
-                search_depth=tool_input.get("search_depth", "advanced"),
-            )
+            query = tool_input.get("query", "")
+            return web_search(query=query, num_results=tool_input.get("num_results", 10))
 
         elif tool_name == "forum_search":
             return forum_search(
@@ -665,28 +647,50 @@ class AIAgent:
             log.debug(f"Claude stop reason: {response.stop_reason}")
 
             if response.stop_reason == "tool_use":
-                # Add Claude's response to history
+                # Add Claude's full response (may include server-side result blocks) to history
                 self.conversation_history.append(
                     {"role": "assistant", "content": response.content}
                 )
 
-                # Execute all requested tool calls
+                # Collect server-side pre-executed results (e.g. Anthropic web_search)
+                # These appear as blocks where the type contains "result" and have tool_use_id
+                server_results: dict = {}
+                for block in response.content:
+                    btype = getattr(block, "type", "")
+                    if "result" in btype and hasattr(block, "tool_use_id"):
+                        server_results[block.tool_use_id] = getattr(block, "content", "")
+                        log.info(f"Server-side result found for tool_use_id: {block.tool_use_id}")
+
+                # Build tool_results — server-side OR custom executed
                 tool_results = []
                 for block in response.content:
-                    if block.type == "tool_use":
-                        log.info(f"Tool called: {block.name}")
-                        result = execute_tool(block.name, block.input)
-                        tool_results.append(
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": block.id,
-                                "content": result,
-                            }
-                        )
+                    if getattr(block, "type", None) == "tool_use":
+                        if block.id in server_results:
+                            # Anthropic executed this server-side (e.g. web_search_20250305)
+                            log.info(f"Using server-side result for: {block.name}")
+                            tool_results.append(
+                                {
+                                    "type": "tool_result",
+                                    "tool_use_id": block.id,
+                                    "content": server_results[block.id],
+                                }
+                            )
+                        else:
+                            # Custom tool — we execute it
+                            log.info(f"Executing custom tool: {block.name}")
+                            result = execute_tool(block.name, block.input)
+                            tool_results.append(
+                                {
+                                    "type": "tool_result",
+                                    "tool_use_id": block.id,
+                                    "content": result,
+                                }
+                            )
 
-                self.conversation_history.append(
-                    {"role": "user", "content": tool_results}
-                )
+                if tool_results:
+                    self.conversation_history.append(
+                        {"role": "user", "content": tool_results}
+                    )
 
             elif response.stop_reason == "end_turn":
                 final_response = "".join(

@@ -1,25 +1,22 @@
 """
 Real-time web search tools for APEX AI Agent.
 
-Search hierarchy:
-  1. Tavily API  — best quality, structured results, auto-extracts page content.
-     (requires TAVILY_API_KEY in .env / Streamlit secrets)
-  2. DuckDuckGo  — free, no API key, used as automatic fallback.
+Primary web search is handled natively by Anthropic's built-in web_search_20250305 tool
+— no extra API key required.
 
-Extra utilities:
+This module provides DuckDuckGo-backed utilities for targeted searches:
+  - web_search(q)    — DuckDuckGo general search (fallback only).
   - fetch_url(url)   — fetch and clean the text content of any URL.
   - forum_search(q)  — targeted search across Reddit, StackOverflow, HN, dev.to, etc.
-  - deep_research(q) — run multiple parallel queries and merge the results.
+  - deep_research(q) — run multiple sub-queries and merge the results.
 """
 
 from __future__ import annotations
 
-import os
 import re
 import textwrap
 import time
-from typing import Any, Optional
-from urllib.parse import quote_plus
+from typing import Any
 
 import requests
 
@@ -46,69 +43,8 @@ def _clean_text(html_or_text: str, max_chars: int = 4000) -> str:
     return text[:max_chars]
 
 
-def _get_secret(key: str) -> str:
-    """Read a secret from env-var or (if running on Streamlit Cloud) from st.secrets."""
-    val = os.getenv(key, "").strip().strip('"').strip("'")
-    if val:
-        return val
-    try:
-        import streamlit as st  # type: ignore
-        val = str(st.secrets.get(key, "")).strip().strip('"').strip("'")
-    except Exception:
-        pass
-    return val
-
-
 # ─────────────────────────────────────────────
-# TAVILY SEARCH
-# ─────────────────────────────────────────────
-
-def _tavily_search(
-    query: str,
-    num_results: int = 8,
-    search_depth: str = "advanced",
-    include_domains: Optional[list[str]] = None,
-    topic: str = "general",
-) -> list[dict]:
-    """
-    Search the web via the Tavily API and return a list of result dicts.
-    Each dict has: title, url, content, score.
-    Returns [] if the API key is missing or the call fails.
-    """
-    api_key = _get_secret("TAVILY_API_KEY")
-    if not api_key:
-        return []
-
-    try:
-        from tavily import TavilyClient  # type: ignore
-
-        client = TavilyClient(api_key=api_key)
-        params: dict[str, Any] = {
-            "query": query,
-            "search_depth": search_depth,
-            "max_results": num_results,
-            "include_answer": True,
-            "include_raw_content": False,
-            "topic": topic,
-        }
-        if include_domains:
-            params["include_domains"] = include_domains
-
-        response = client.search(**params)
-        results = response.get("results", [])
-        log.info(f"Tavily returned {len(results)} results for: {query[:60]}")
-        return results
-
-    except ImportError:
-        log.warning("tavily-python not installed – falling back to DuckDuckGo")
-        return []
-    except Exception as exc:
-        log.warning(f"Tavily search failed ({exc}) – falling back to DuckDuckGo")
-        return []
-
-
-# ─────────────────────────────────────────────
-# DUCKDUCKGO SEARCH  (free fallback)
+# DUCKDUCKGO SEARCH
 # ─────────────────────────────────────────────
 
 def _ddg_search(query: str, num_results: int = 10) -> list[dict]:
@@ -178,44 +114,33 @@ def web_search(
     query: str,
     num_results: int = 10,
     fetch_content: bool = True,
-    search_depth: str = "advanced",
+    **_kwargs: Any,
 ) -> str:
     """
-    Search the web and return a formatted string of results with content snippets.
-
-    Uses Tavily if TAVILY_API_KEY is set, otherwise DuckDuckGo.
+    DuckDuckGo-based web search — used as a fallback only.
+    Primary web search is handled server-side by Anthropic's web_search_20250305 tool.
 
     Args:
         query: The search query.
         num_results: Number of results to fetch (default 10).
-        fetch_content: If True and using DuckDuckGo, try to fetch page body for top 3 results.
-        search_depth: Tavily search depth — "basic" or "advanced".
+        fetch_content: If True, try to fetch page body for top 3 results.
 
     Returns:
         Formatted string of results ready to pass to the model.
     """
-    log.info(f"web_search: '{query}'")
+    log.info(f"web_search (DDG fallback): '{query}'")
 
-    # Try Tavily first
-    results = _tavily_search(query, num_results=num_results, search_depth=search_depth)
-    source = "Tavily"
-
-    # Fallback to DuckDuckGo
-    if not results:
-        results = _ddg_search(query, num_results=num_results)
-        source = "DuckDuckGo"
-
+    results = _ddg_search(query, num_results=num_results)
     if not results:
         return f"⚠️ No search results found for: {query}"
 
-    lines: list[str] = [f"## Web Search Results — '{query}' (via {source})\n"]
+    lines: list[str] = [f"## Web Search Results — '{query}' (via DuckDuckGo)\n"]
     for i, r in enumerate(results, 1):
         title = r.get("title", "No title")
         url = r.get("url", "")
         snippet = r.get("content", "")
 
-        # For DuckDuckGo top-3, optionally enrich with fetched content
-        if fetch_content and source == "DuckDuckGo" and i <= 3 and url:
+        if fetch_content and i <= 3 and url:
             fetched = fetch_url(url, max_chars=1500)
             if fetched and not fetched.startswith("[Failed"):
                 snippet = fetched
@@ -261,21 +186,10 @@ def forum_search(query: str, num_results: int = 10) -> str:
     """
     log.info(f"forum_search: '{query}'")
 
-    # Try Tavily with domain filter
-    results = _tavily_search(
-        query,
-        num_results=num_results,
-        include_domains=_FORUM_DOMAINS,
-        search_depth="advanced",
-    )
-    source = "Tavily (forums)"
-
-    # DDG fallback with site: operators
-    if not results:
-        site_list = " OR ".join(f"site:{d}" for d in _FORUM_DOMAINS[:6])
-        enhanced_query = f"{query} ({site_list})"
-        results = _ddg_search(enhanced_query, num_results=num_results)
-        source = "DuckDuckGo (forums)"
+    site_list = " OR ".join(f"site:{d}" for d in _FORUM_DOMAINS[:6])
+    enhanced_query = f"{query} ({site_list})"
+    results = _ddg_search(enhanced_query, num_results=num_results)
+    source = "DuckDuckGo (forums)"
 
     if not results:
         return f"⚠️ No forum results found for: {query}"
@@ -321,9 +235,7 @@ def deep_research(topic: str) -> str:
     seen_urls: set[str] = set()
 
     for q in sub_queries:
-        # Try Tavily first, then DDG
-        results = _tavily_search(q, num_results=5, search_depth="advanced") or \
-                  _ddg_search(q, num_results=5)
+        results = _ddg_search(q, num_results=5)
         if not results:
             continue
 
