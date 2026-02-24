@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: apex-ai-agent
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run main.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SF_USERNAME
+        sync: false
+      - key: SF_PASSWORD
+        sync: false
+      - key: SF_SECURITY_TOKEN
+        sync: false
+      - key: SF_DOMAIN
+        value: login
+      - key: MAX_FILE_SIZE_MB
+        value: 50
+      - key: UPLOAD_FOLDER
+        value: uploads
+      - key: OUTPUT_FOLDER
+        value: outputs
+      - key: LOG_LEVEL
+        value: INFO

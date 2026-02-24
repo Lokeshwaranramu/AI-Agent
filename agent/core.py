@@ -4,16 +4,12 @@ This is the central orchestrator of the entire agent.
 """
 import json
 import os
-import ssl
+import sys
 import warnings
 from typing import Any, Dict, List, Optional
 
 import anthropic
-import certifi
 import httpx
-
-# Suppress InsecureRequestWarning from urllib3 (SSL bypass on Windows)
-warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 from agent.system_prompt import MASTER_SYSTEM_PROMPT
 from tools.code_tools import analyze_code_for_bugs, execute_python_code
@@ -285,12 +281,23 @@ class AIAgent:
 
     def __init__(self) -> None:
         """Initialize the AI Agent with Anthropic client."""
-        # Bypass SSL verification — needed on Windows with corporate/system cert chains
-        http_client = httpx.Client(verify=False)
         self.client = anthropic.Anthropic(
             api_key=os.getenv("ANTHROPIC_API_KEY"),
-            http_client=http_client,
+            http_client=self._build_http_client(),
         )
+
+    @staticmethod
+    def _build_http_client() -> httpx.Client:
+        """
+        Build an httpx client.
+        On Windows, SSL verification is disabled to work around broken system cert chains.
+        On Linux/macOS (production servers) standard SSL verification is used.
+        """
+        if sys.platform == "win32":
+            warnings.filterwarnings("ignore", message="Unverified HTTPS request")
+            log.warning("Windows detected — SSL verification disabled for Anthropic API calls")
+            return httpx.Client(verify=False)
+        return httpx.Client(verify=True)
         self.model = "claude-sonnet-4-6"
         self.max_tokens = 8096
         self.conversation_history: List[Dict[str, Any]] = []

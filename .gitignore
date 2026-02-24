@@ -25,3 +25,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Keep Streamlit config (needed for deployment)
+!.streamlit/
+!.streamlit/config.toml
