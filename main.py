@@ -436,6 +436,9 @@ with st.sidebar:
         ("Add watermark to image",           "Image Editing",           "[MODE: Image Editing] Ask the user to upload the image and provide the watermark text."),
         ("Write code for me",                "Code Writing",            "[MODE: Code Writing] Ask the user what language and what they want built."),
         ("Explain Salesforce concepts",      "Salesforce Expert",       "[MODE: Salesforce Expert] Ask which Salesforce topic or concept they want explained."),
+        ("🔍 Search the web",                "Web Research",            "[MODE: Web Research] Ask the user what they want thoroughly researched — you will search the live web, forums, and community resources to give a comprehensive, real-time answer."),
+        ("🐙 Build & host GitHub app",        "Build GitHub App",        "[MODE: Build GitHub App] Ask for: app name, short description, type (HTML landing page / React app / Python Flask / Node.js), and whether the repo should be public or private. Then build, push, and host it."),
+        ("⚡ Autonomous task",               "Autonomous Task",         "[MODE: Autonomous Task] Ask the user to describe ANY task they want you to complete fully and autonomously — no matter how complex or multi-step."),
     ]
 
     for label, mode_name, intro_prompt in quick_commands:
@@ -463,6 +466,10 @@ with st.sidebar:
   <div class="cap-item">📑 → PDF</div>
   <div class="cap-item">🎬 Reels</div>
   <div class="cap-item">▶️ YouTube</div>
+  <div class="cap-item">🔍 Web Search</div>
+  <div class="cap-item">🐙 GitHub</div>
+  <div class="cap-item">⚡ Shell/CLI</div>
+  <div class="cap-item">🤖 Auto-tasks</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -562,6 +569,28 @@ if not st.session_state.messages:
             "in the sidebar. Tell them to describe the file if they'd like text-only instructions instead.",
         ),
         (
+            "🔍 Search Web",
+            "Web Research",
+            "[MODE: Web Research] You are now in Deep Web Research mode. "
+            "Greet the user in one short sentence, then ask what they would like researched. "
+            "You will search the live internet, developer forums (Reddit, Stack Overflow, "
+            "Hacker News, GitHub, dev.to), documentation, and news sources — "
+            "then synthesise a comprehensive real-time answer. Do NOT answer yet — wait for their topic.",
+        ),
+        (
+            "🐙 GitHub App",
+            "Build GitHub App",
+            "[MODE: Build GitHub App] You are now in GitHub App Builder mode. "
+            "Greet the user in one short sentence, then ask: "
+            "(1) App/repo name, "
+            "(2) What the app should do (brief description), "
+            "(3) Type — HTML+CSS+JS landing page, React SPA, Python Flask, Node.js Express, or other, "
+            "(4) Public or private repo? "
+            "Once they answer, you will autonomously write all code, create the GitHub repo, "
+            "push every file, enable GitHub Pages, and return the live URL. "
+            "Do NOT start yet — wait for their answers.",
+        ),
+        (
             "🎬 Reel Script",
             "Instagram Reel Script",
             "[MODE: Instagram Reel Script] You are now in Instagram Reel Script mode. "
@@ -592,11 +621,26 @@ if not st.session_state.messages:
             "Also ask what error or issue they are experiencing. "
             "Do NOT debug anything yet — wait for the code.",
         ),
+        (
+            "⚡ Autonomous Task",
+            "Autonomous Task",
+            "[MODE: Autonomous Task] You are now in Autonomous Execution mode. "
+            "Greet the user in one short sentence. "
+            "Ask them to describe ANY task — complex or multi-step — that they want you to "
+            "complete entirely on their behalf. You will plan the steps, execute each one "
+            "using your tools, and deliver the completed result. Wait for their task description.",
+        ),
     ]
     cols1 = st.columns(3)
     cols2 = st.columns(3)
+    cols3 = st.columns(3)
     for i, (label, mode_name, intro_prompt) in enumerate(chip_actions):
-        col = cols1[i] if i < 3 else cols2[i - 3]
+        if i < 3:
+            col = cols1[i]
+        elif i < 6:
+            col = cols2[i - 3]
+        else:
+            col = cols3[i - 6]
         with col:
             if st.button(label, use_container_width=True, key=f"chip_{i}"):
                 st.session_state.active_mode = mode_name
