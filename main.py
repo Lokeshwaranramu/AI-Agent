@@ -40,15 +40,15 @@ st.markdown("""
 
 /* ── Root variables ── */
 :root {
-    --primary: #6C63FF;
-    --primary-dark: #5a52d5;
+    --primary: #111111;
+    --primary-dark: #000000;
     --bg: #FFFFFF;
     --surface: #F4F4F8;
     --surface2: #EEEEF5;
     --border: #D8D8E8;
     --text: #1a1a2e;
     --text-muted: #6b6b8a;
-    --user-bubble: #6C63FF;
+    --user-bubble: #2a2a2a;
     --bot-bubble: #F8F8FC;
     --radius: 16px;
     --radius-sm: 10px;
@@ -89,16 +89,12 @@ html, body, [data-testid="stAppViewContainer"],
     border-bottom: 1px solid var(--border);
 }
 .apex-logo-icon {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
-    border-radius: 10px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(108,99,255,0.3);
 }
 .apex-logo-text {
     font-size: 1.15rem;
@@ -115,7 +111,7 @@ html, body, [data-testid="stAppViewContainer"],
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(108,99,255,0.15);
+    background: rgba(0,0,0,0.06);
     border: 1px solid var(--primary);
     border-radius: 20px;
     padding: 4px 12px;
@@ -135,8 +131,8 @@ html, body, [data-testid="stAppViewContainer"],
     box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
 }
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
-    background: linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(139,92,246,0.05) 100%) !important;
-    border-color: rgba(108,99,255,0.35) !important;
+    background: linear-gradient(135deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.02) 100%) !important;
+    border-color: rgba(0,0,0,0.14) !important;
 }
 [data-testid="stChatMessage"] p {
     font-size: clamp(0.88rem, 3vw, 1rem) !important;
@@ -145,8 +141,8 @@ html, body, [data-testid="stAppViewContainer"],
 }
 [data-testid="stChatMessage"] code {
     font-size: clamp(0.78rem, 2.5vw, 0.88rem) !important;
-    background: rgba(108,99,255,0.10) !important;
-    color: #5a52d5 !important;
+    background: rgba(0,0,0,0.06) !important;
+    color: #333333 !important;
     border-radius: 5px !important;
     padding: 1px 5px !important;
 }
@@ -164,11 +160,11 @@ html, body, [data-testid="stAppViewContainer"],
     border-radius: 24px !important;
     padding: 6px 16px !important;
     transition: border-color 0.2s !important;
-    box-shadow: 0 2px 12px rgba(108,99,255,0.08) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
 }
 [data-testid="stChatInput"]:focus-within {
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(108,99,255,0.15) !important;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.12) !important;
 }
 [data-testid="stChatInput"] textarea {
     font-size: clamp(0.9rem, 3vw, 1rem) !important;
@@ -316,8 +312,8 @@ html, body, [data-testid="stAppViewContainer"],
     margin-top: 1.2rem;
 }
 .chip {
-    background: rgba(108,99,255,0.12);
-    border: 1px solid rgba(108,99,255,0.3);
+    background: rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.15);
     border-radius: 20px;
     padding: 5px 14px;
     font-size: clamp(0.72rem, 2.5vw, 0.82rem);
@@ -325,7 +321,7 @@ html, body, [data-testid="stAppViewContainer"],
     cursor: pointer;
     transition: background 0.15s;
 }
-.chip:hover { background: rgba(108,99,255,0.25); }
+.chip:hover { background: rgba(0,0,0,0.12); }
 
 /* ── Mobile breakpoints ── */
 @media (max-width: 768px) {
@@ -352,23 +348,23 @@ html, body, [data-testid="stAppViewContainer"],
 
 /* ── Welcome chip buttons (light mode) ── */
 [data-testid="stMain"] div[data-testid="column"] .stButton > button {
-    background: rgba(108,99,255,0.07) !important;
+    background: rgba(0,0,0,0.04) !important;
     color: var(--primary) !important;
-    border: 1.5px solid rgba(108,99,255,0.3) !important;
+    border: 1.5px solid rgba(0,0,0,0.15) !important;
     border-radius: 24px !important;
     font-size: clamp(0.75rem, 2.5vw, 0.85rem) !important;
     padding: 10px 8px !important;
     min-height: 44px !important;
     font-weight: 500 !important;
     transition: all 0.15s !important;
-    box-shadow: 0 1px 4px rgba(108,99,255,0.10) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
 }
 [data-testid="stMain"] div[data-testid="column"] .stButton > button:hover {
     background: var(--primary) !important;
     color: #fff !important;
     border-color: var(--primary) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 16px rgba(108,99,255,0.25) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.20) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -477,7 +473,38 @@ with st.sidebar:
 # Logo bar
 st.markdown("""
 <div class="apex-logo-bar">
-  <div class="apex-logo-icon">🤖</div>
+  <div class="apex-logo-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="42" height="42">
+      <defs>
+        <linearGradient id="aBg" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#222"/>
+          <stop offset="100%" stop-color="#080808"/>
+        </linearGradient>
+        <radialGradient id="aSh" cx="38%" cy="22%" r="55%">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.13"/>
+          <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="aGl" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="1.2" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <rect width="56" height="56" rx="12" fill="url(#aBg)"/>
+      <rect width="56" height="56" rx="12" fill="url(#aSh)"/>
+      <rect width="56" height="56" rx="12" fill="none" stroke="#2e2e2e" stroke-width="0.8"/>
+      <polyline points="4,12 4,4 12,4" fill="none" stroke="#404040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="44,4 52,4 52,12" fill="none" stroke="#404040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="52,44 52,52 44,52" fill="none" stroke="#404040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="12,52 4,52 4,44" fill="none" stroke="#404040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="28" y1="10" x2="13" y2="47" stroke="#e0e0e0" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="28" y1="10" x2="43" y2="47" stroke="#e0e0e0" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="19.5" y1="33.5" x2="36.5" y2="33.5" stroke="#e0e0e0" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="28" cy="10" r="3.5" fill="#ffffff" filter="url(#aGl)"/>
+      <circle cx="28" cy="10" r="6.5" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.28"/>
+      <circle cx="13" cy="47" r="2.5" fill="#707070"/>
+      <circle cx="43" cy="47" r="2.5" fill="#707070"/>
+    </svg>
+  </div>
   <div class="apex-logo-text"><span>APEX</span> AI Agent</div>
 </div>
 """, unsafe_allow_html=True)
@@ -485,7 +512,7 @@ st.markdown("""
 # Show active mode badge
 if st.session_state.get("active_mode"):
     st.markdown(
-        f'<div class="file-badge" style="background:rgba(108,99,255,0.18);border-color:#6C63FF;">'
+        f'<div class="file-badge" style="background:rgba(0,0,0,0.07);border-color:#333333;">'
         f'⚡ Mode: <strong>{st.session_state.active_mode}</strong>&nbsp;&nbsp;'
         f'<span style="cursor:pointer;opacity:0.6;font-size:0.8rem;" '
         f'title="Clear mode">✕</span></div>',
