@@ -310,7 +310,32 @@ html, body, [data-testid="stAppViewContainer"] {
     padding: 5px 14px;
     font-size: clamp(0.72rem, 2.5vw, 0.82rem);
     color: var(--primary);
-    cursor: default;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.chip:hover { background: rgba(108,99,255,0.25); }
+
+/* ── Welcome chip buttons ── */
+[data-testid="stMain"] div[data-testid="column"] .stButton > button {
+    background: rgba(108,99,255,0.10) !important;
+    color: var(--primary) !important;
+    border: 1.5px solid rgba(108,99,255,0.35) !important;
+    border-radius: 24px !important;
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem) !important;
+    padding: 10px 8px !important;
+    min-height: 44px !important;
+    font-weight: 500 !important;
+    transition: all 0.15s !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+[data-testid="stMain"] div[data-testid="column"] .stButton > button:hover {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.35) !important;
 }
 
 /* ── Mobile breakpoints ── */
@@ -449,17 +474,27 @@ if not st.session_state.messages:
 <div class="welcome-card">
   <div class="big-icon">✨</div>
   <h2>How can I help you today?</h2>
-  <p>I can write code, debug, answer questions, convert files to PDF, edit images, create social media scripts, and more.</p>
-  <div class="chip-row">
-    <span class="chip">💻 Write Code</span>
-    <span class="chip">☁️ Salesforce</span>
-    <span class="chip">📑 File → PDF</span>
-    <span class="chip">🎬 Reel Script</span>
-    <span class="chip">🖼️ Edit Image</span>
-    <span class="chip">🐛 Debug</span>
-  </div>
+  <p>I can write code, debug, answer questions, convert files to PDF,<br>edit images, create social media scripts, and more.</p>
 </div>
 """, unsafe_allow_html=True)
+
+    # Functional quick-action chips (2 rows of 3)
+    chip_actions = [
+        ("💻 Write Code",    "Write a Python function to reverse a string"),
+        ("☁️ Salesforce",    "Explain Salesforce governor limits with examples"),
+        ("📑 File → PDF",   "How do I convert a Word document to PDF?"),
+        ("🎬 Reel Script",  "Create a 30-second Instagram Reel script about AI productivity"),
+        ("🖼️ Edit Image",   "How do I resize and add a watermark to an image?"),
+        ("🐛 Debug Code",   "Debug the uploaded code file"),
+    ]
+    cols1 = st.columns(3)
+    cols2 = st.columns(3)
+    for i, (label, action) in enumerate(chip_actions):
+        col = cols1[i] if i < 3 else cols2[i - 3]
+        with col:
+            if st.button(label, use_container_width=True, key=f"chip_{i}"):
+                st.session_state.quick_command = action
+                st.rerun()
 
 # Display existing chat history
 for message in st.session_state.messages:
