@@ -386,6 +386,9 @@ if "uploaded_file_path" not in st.session_state:
 if "quick_command" not in st.session_state:
     st.session_state.quick_command = None
 
+if "active_mode" not in st.session_state:
+    st.session_state.active_mode = None
+
 # ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
@@ -418,26 +421,28 @@ with st.sidebar:
     st.subheader("⚡ Quick Commands")
 
     quick_commands = [
-        "Convert uploaded file to PDF",
-        "Debug the uploaded code file",
-        "Write a Salesforce Apex trigger for Account",
-        "Create a 30-second Instagram Reel script about AI",
-        "Create a YouTube video script about Salesforce basics",
-        "Resize the uploaded image to 800x600",
-        "Add a watermark to the uploaded image",
-        "Write a Python function to sort a list of dicts",
-        "Explain Salesforce governor limits",
+        ("Convert file to PDF",              "File to PDF",             "[MODE: File to PDF] Ask the user to upload their file via the sidebar, then convert it to PDF."),
+        ("Debug my code",                    "Code Debugging",          "[MODE: Code Debugging] Ask the user to paste or upload their code and describe the issue."),
+        ("Write a Salesforce Apex trigger",  "Salesforce Expert",       "[MODE: Salesforce Expert] Ask the user which object the trigger is for and what behaviour they need."),
+        ("Create an Instagram Reel script",  "Instagram Reel Script",   "[MODE: Instagram Reel Script] Ask for topic, duration, niche, and tone before writing the script."),
+        ("Create a YouTube video script",    "YouTube Script",          "[MODE: YouTube Script] Ask for topic, video length, style, and target audience before writing."),
+        ("Resize / edit an image",           "Image Editing",           "[MODE: Image Editing] Ask the user to upload the image and describe what they want done."),
+        ("Add watermark to image",           "Image Editing",           "[MODE: Image Editing] Ask the user to upload the image and provide the watermark text."),
+        ("Write code for me",                "Code Writing",            "[MODE: Code Writing] Ask the user what language and what they want built."),
+        ("Explain Salesforce concepts",      "Salesforce Expert",       "[MODE: Salesforce Expert] Ask which Salesforce topic or concept they want explained."),
     ]
 
-    for cmd in quick_commands:
-        if st.button(cmd, use_container_width=True, key=f"qc_{cmd[:20]}"):
-            st.session_state.quick_command = cmd
+    for label, mode_name, intro_prompt in quick_commands:
+        if st.button(label, use_container_width=True, key=f"qc_{label[:20]}"):
+            st.session_state.active_mode = mode_name
+            st.session_state.quick_command = intro_prompt
             st.rerun()
 
     st.markdown("---")
     if st.button("🗑️ Clear Conversation", use_container_width=True, key="clear_btn"):
         st.session_state.messages = []
         st.session_state.agent.reset_conversation()
+        st.session_state.active_mode = None
         st.rerun()
 
     st.markdown("---")
@@ -470,6 +475,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Show active mode badge
+if st.session_state.get("active_mode"):
+    st.markdown(
+        f'<div class="file-badge" style="background:rgba(108,99,255,0.18);border-color:#6C63FF;">'
+        f'⚡ Mode: <strong>{st.session_state.active_mode}</strong>&nbsp;&nbsp;'
+        f'<span style="cursor:pointer;opacity:0.6;font-size:0.8rem;" '
+        f'title="Clear mode">✕</span></div>',
+        unsafe_allow_html=True
+    )
+
 # Show uploaded file badge
 if st.session_state.uploaded_file_path:
     fname = Path(st.session_state.uploaded_file_path).name
@@ -486,21 +501,72 @@ if not st.session_state.messages:
 """, unsafe_allow_html=True)
 
     # Functional quick-action chips (2 rows of 3)
+    # Each entry: (button label, mode name, intro prompt sent to Claude)
     chip_actions = [
-        ("💻 Write Code",    "Write a Python function to reverse a string"),
-        ("☁️ Salesforce",    "Explain Salesforce governor limits with examples"),
-        ("📑 File → PDF",   "How do I convert a Word document to PDF?"),
-        ("🎬 Reel Script",  "Create a 30-second Instagram Reel script about AI productivity"),
-        ("🖼️ Edit Image",   "How do I resize and add a watermark to an image?"),
-        ("🐛 Debug Code",   "Debug the uploaded code file"),
+        (
+            "💻 Write Code",
+            "Code Writing",
+            "[MODE: Code Writing] You are now in Code Writing mode. "
+            "Greet the user in one short sentence, then ask them: "
+            "(1) what programming language, and (2) what they want you to build or write. "
+            "Do NOT write any code yet — wait for their answer.",
+        ),
+        (
+            "☁️ Salesforce",
+            "Salesforce Expert",
+            "[MODE: Salesforce Expert] You are now in Salesforce Expert mode. "
+            "Greet the user in one short sentence, then ask them what Salesforce topic "
+            "they need help with — e.g. Apex, LWC, SOQL, Flows, integrations, architecture, "
+            "certifications, or something else. Do NOT answer anything yet — wait for their input.",
+        ),
+        (
+            "📑 File → PDF",
+            "File to PDF",
+            "[MODE: File to PDF] You are now in File-to-PDF conversion mode. "
+            "Greet the user in one short sentence, then ask them to upload the file they want "
+            "to convert (Word, Excel, PowerPoint, image, text, etc.) using the upload button "
+            "in the sidebar. Tell them to describe the file if they'd like text-only instructions instead.",
+        ),
+        (
+            "🎬 Reel Script",
+            "Instagram Reel Script",
+            "[MODE: Instagram Reel Script] You are now in Instagram Reel Script mode. "
+            "Greet the user in one short sentence, then ask them these questions: "
+            "(1) What is the topic of the reel? "
+            "(2) How long should it be — 15, 30, 60, or 90 seconds? "
+            "(3) What niche or industry (tech, business, lifestyle, fitness, etc.)? "
+            "(4) What tone — engaging, funny, motivational, or professional? "
+            "Do NOT write the script yet — wait for their answers.",
+        ),
+        (
+            "🖼️ Edit Image",
+            "Image Editing",
+            "[MODE: Image Editing] You are now in Image Editing mode. "
+            "Greet the user in one short sentence, then ask them: "
+            "(1) Please upload the image using the sidebar upload button. "
+            "(2) What would you like to do — resize, convert format, add watermark, "
+            "adjust brightness/contrast/saturation, or something else? "
+            "Do NOT do anything yet — wait for their upload and instructions.",
+        ),
+        (
+            "🐛 Debug Code",
+            "Code Debugging",
+            "[MODE: Code Debugging] You are now in Code Debugging mode. "
+            "Greet the user in one short sentence, then ask them to either: "
+            "(1) paste their code directly in the chat, or "
+            "(2) upload the code file using the sidebar upload button. "
+            "Also ask what error or issue they are experiencing. "
+            "Do NOT debug anything yet — wait for the code.",
+        ),
     ]
     cols1 = st.columns(3)
     cols2 = st.columns(3)
-    for i, (label, action) in enumerate(chip_actions):
+    for i, (label, mode_name, intro_prompt) in enumerate(chip_actions):
         col = cols1[i] if i < 3 else cols2[i - 3]
         with col:
             if st.button(label, use_container_width=True, key=f"chip_{i}"):
-                st.session_state.quick_command = action
+                st.session_state.active_mode = mode_name
+                st.session_state.quick_command = intro_prompt
                 st.rerun()
 
 # Display existing chat history
@@ -517,9 +583,17 @@ else:
 
 # Process user input
 if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    # Clear mode after user replies (mode served its purpose)
+    is_mode_intro = prompt.startswith("[MODE:")
+    if not is_mode_intro:
+        st.session_state.active_mode = None
+
+    # Only show user-visible messages (hide internal mode intro prompts)
+    display_prompt = prompt if not is_mode_intro else None
+    if display_prompt:
+        st.session_state.messages.append({"role": "user", "content": display_prompt})
+        with st.chat_message("user"):
+            st.markdown(display_prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
@@ -530,7 +604,8 @@ if prompt:
                 )
                 st.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.uploaded_file_path = None  # clear after use
+                if not is_mode_intro:
+                    st.session_state.uploaded_file_path = None  # clear after use
             except Exception as exc:
                 error_msg = f"❌ Error: {exc}"
                 st.error(error_msg)
