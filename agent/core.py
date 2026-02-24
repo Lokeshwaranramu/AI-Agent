@@ -12,6 +12,32 @@ import anthropic
 import httpx
 
 from agent.system_prompt import MASTER_SYSTEM_PROMPT
+
+
+def _get_api_key() -> str:
+    """
+    Retrieve the Anthropic API key.
+    Priority: environment variable → Streamlit secrets → raise clear error.
+    """
+    # 1. Standard env var (works locally with .env and on most cloud platforms)
+    key = os.getenv("ANTHROPIC_API_KEY", "").strip().strip('"').strip("'")
+    if key:
+        return key
+
+    # 2. Streamlit Cloud secrets (st.secrets acts like a dict)
+    try:
+        import streamlit as st
+        key = str(st.secrets.get("ANTHROPIC_API_KEY", "")).strip().strip('"').strip("'")
+        if key:
+            return key
+    except Exception:
+        pass
+
+    raise ValueError(
+        "ANTHROPIC_API_KEY is not set. "
+        "Add it in Streamlit Cloud → App settings → Secrets as:\n"
+        'ANTHROPIC_API_KEY = "sk-ant-api03-..."'
+    )
 from tools.code_tools import analyze_code_for_bugs, execute_python_code
 from tools.document_tools import modify_excel_file, modify_word_document
 from tools.image_tools import add_watermark, adjust_image, convert_image_format, resize_image
@@ -285,7 +311,7 @@ class AIAgent:
         self.max_tokens = 8096
         self.conversation_history: List[Dict[str, Any]] = []
         self.client = anthropic.Anthropic(
-            api_key=os.getenv("ANTHROPIC_API_KEY"),
+            api_key=_get_api_key(),
             http_client=self._build_http_client(),
         )
         log.success("AI Agent initialized")

@@ -368,7 +368,14 @@ html, body, [data-testid="stAppViewContainer"] {
 # ─────────────────────────────────────────────
 
 if "agent" not in st.session_state:
-    st.session_state.agent = AIAgent()
+    try:
+        st.session_state.agent = AIAgent()
+    except ValueError as e:
+        st.error(f"⚠️ **Setup required:** {e}")
+        st.stop()
+    except Exception as e:
+        st.error(f"❌ **Failed to initialize agent:** {e}")
+        st.stop()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
