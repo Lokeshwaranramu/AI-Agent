@@ -42,20 +42,21 @@ st.markdown("""
 :root {
     --primary: #6C63FF;
     --primary-dark: #5a52d5;
-    --bg: #0E1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3250;
-    --text: #e8eaf6;
-    --text-muted: #8b8fa8;
+    --bg: #FFFFFF;
+    --surface: #F4F4F8;
+    --surface2: #EEEEF5;
+    --border: #D8D8E8;
+    --text: #1a1a2e;
+    --text-muted: #6b6b8a;
     --user-bubble: #6C63FF;
-    --bot-bubble: #1e2235;
+    --bot-bubble: #F8F8FC;
     --radius: 16px;
     --radius-sm: 10px;
 }
 
 /* ── Base reset ── */
-html, body, [data-testid="stAppViewContainer"] {
+html, body, [data-testid="stAppViewContainer"],
+[data-testid="stMain"], [data-testid="stVerticalBlock"] {
     font-family: 'Inter', sans-serif !important;
     background-color: var(--bg) !important;
     color: var(--text) !important;
@@ -125,11 +126,11 @@ html, body, [data-testid="stAppViewContainer"] {
     border: 1px solid var(--border) !important;
     background: var(--bot-bubble) !important;
     max-width: 100% !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
 }
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
-    background: linear-gradient(135deg, rgba(108,99,255,0.18) 0%, rgba(139,92,246,0.10) 100%) !important;
-    border-color: var(--primary) !important;
+    background: linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(139,92,246,0.05) 100%) !important;
+    border-color: rgba(108,99,255,0.35) !important;
 }
 [data-testid="stChatMessage"] p {
     font-size: clamp(0.88rem, 3vw, 1rem) !important;
@@ -138,27 +139,30 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 [data-testid="stChatMessage"] code {
     font-size: clamp(0.78rem, 2.5vw, 0.88rem) !important;
-    background: rgba(108,99,255,0.15) !important;
+    background: rgba(108,99,255,0.10) !important;
+    color: #5a52d5 !important;
     border-radius: 5px !important;
     padding: 1px 5px !important;
 }
 [data-testid="stChatMessage"] pre {
     border-radius: var(--radius-sm) !important;
     border: 1px solid var(--border) !important;
+    background: #f8f8fc !important;
     overflow-x: auto !important;
 }
 
 /* ── Chat input bar ── */
 [data-testid="stChatInput"] {
-    background: var(--surface) !important;
+    background: #fff !important;
     border: 1.5px solid var(--border) !important;
     border-radius: 24px !important;
     padding: 6px 16px !important;
     transition: border-color 0.2s !important;
+    box-shadow: 0 2px 12px rgba(108,99,255,0.08) !important;
 }
 [data-testid="stChatInput"]:focus-within {
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(108,99,255,0.2) !important;
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.15) !important;
 }
 [data-testid="stChatInput"] textarea {
     font-size: clamp(0.9rem, 3vw, 1rem) !important;
@@ -180,7 +184,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: var(--surface) !important;
+    background: #F4F4F8 !important;
     border-right: 1px solid var(--border) !important;
 }
 [data-testid="stSidebar"] .block-container {
@@ -202,7 +206,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 /* ── Sidebar buttons (quick commands) ── */
 [data-testid="stSidebar"] .stButton > button {
-    background: var(--surface2) !important;
+    background: #fff !important;
     color: var(--text) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius-sm) !important;
@@ -213,6 +217,7 @@ html, body, [data-testid="stAppViewContainer"] {
     transition: all 0.15s !important;
     width: 100% !important;
     margin-bottom: 4px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
     background: var(--primary) !important;
@@ -236,7 +241,7 @@ html, body, [data-testid="stAppViewContainer"] {
     border: 2px dashed var(--border) !important;
     border-radius: var(--radius-sm) !important;
     padding: 12px !important;
-    background: var(--surface2) !important;
+    background: #fff !important;
     transition: border-color 0.2s !important;
 }
 [data-testid="stFileUploader"]:hover {
@@ -262,7 +267,7 @@ html, body, [data-testid="stAppViewContainer"] {
     margin-top: 8px;
 }
 .cap-item {
-    background: var(--surface2);
+    background: #fff;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px 8px;
@@ -279,10 +284,11 @@ html, body, [data-testid="stAppViewContainer"] {
     justify-content: center;
     padding: 2.5rem 1.5rem;
     text-align: center;
-    background: var(--surface);
+    background: #F4F4F8;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     margin: 1rem 0;
+    box-shadow: 0 2px 12px rgba(108,99,255,0.06);
 }
 .welcome-card .big-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
 .welcome-card h2 {
@@ -315,29 +321,6 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 .chip:hover { background: rgba(108,99,255,0.25); }
 
-/* ── Welcome chip buttons ── */
-[data-testid="stMain"] div[data-testid="column"] .stButton > button {
-    background: rgba(108,99,255,0.10) !important;
-    color: var(--primary) !important;
-    border: 1.5px solid rgba(108,99,255,0.35) !important;
-    border-radius: 24px !important;
-    font-size: clamp(0.75rem, 2.5vw, 0.85rem) !important;
-    padding: 10px 8px !important;
-    min-height: 44px !important;
-    font-weight: 500 !important;
-    transition: all 0.15s !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-[data-testid="stMain"] div[data-testid="column"] .stButton > button:hover {
-    background: var(--primary) !important;
-    color: #fff !important;
-    border-color: var(--primary) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 16px rgba(108,99,255,0.35) !important;
-}
-
 /* ── Mobile breakpoints ── */
 @media (max-width: 768px) {
     .main .block-container {
@@ -357,9 +340,30 @@ html, body, [data-testid="stAppViewContainer"] {
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-track { background: #f0f0f8; }
+::-webkit-scrollbar-thumb { background: #c8c8de; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ── Welcome chip buttons (light mode) ── */
+[data-testid="stMain"] div[data-testid="column"] .stButton > button {
+    background: rgba(108,99,255,0.07) !important;
+    color: var(--primary) !important;
+    border: 1.5px solid rgba(108,99,255,0.3) !important;
+    border-radius: 24px !important;
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem) !important;
+    padding: 10px 8px !important;
+    min-height: 44px !important;
+    font-weight: 500 !important;
+    transition: all 0.15s !important;
+    box-shadow: 0 1px 4px rgba(108,99,255,0.10) !important;
+}
+[data-testid="stMain"] div[data-testid="column"] .stButton > button:hover {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.25) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
