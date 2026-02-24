@@ -281,10 +281,14 @@ class AIAgent:
 
     def __init__(self) -> None:
         """Initialize the AI Agent with Anthropic client."""
+        self.model = "claude-sonnet-4-6"
+        self.max_tokens = 8096
+        self.conversation_history: List[Dict[str, Any]] = []
         self.client = anthropic.Anthropic(
             api_key=os.getenv("ANTHROPIC_API_KEY"),
             http_client=self._build_http_client(),
         )
+        log.success("AI Agent initialized")
 
     @staticmethod
     def _build_http_client() -> httpx.Client:
@@ -298,10 +302,6 @@ class AIAgent:
             log.warning("Windows detected — SSL verification disabled for Anthropic API calls")
             return httpx.Client(verify=False)
         return httpx.Client(verify=True)
-        self.model = "claude-sonnet-4-6"
-        self.max_tokens = 8096
-        self.conversation_history: List[Dict[str, Any]] = []
-        log.success("AI Agent initialized")
 
     def chat(self, user_message: str, uploaded_file_path: Optional[str] = None) -> str:
         """
