@@ -79,29 +79,35 @@ html, body, [data-testid="stAppViewContainer"],
     margin: 0 auto !important;
 }
 
-/* ── App header bar ── */
-.apex-header {
+/* ── Logo bar ── */
+.apex-logo-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
+    gap: 10px;
+    padding: 10px 4px;
+    margin-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+}
+.apex-logo-icon {
+    width: 38px;
+    height: 38px;
     background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
-    border-radius: var(--radius);
-    margin-bottom: 1.2rem;
-    box-shadow: 0 4px 24px rgba(108,99,255,0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(108,99,255,0.3);
 }
-.apex-header .apex-icon { font-size: 2rem; }
-.apex-header h1 {
-    margin: 0 !important;
-    font-size: clamp(1.1rem, 4vw, 1.5rem) !important;
-    font-weight: 700 !important;
-    color: #fff !important;
-    line-height: 1.2 !important;
+.apex-logo-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
 }
-.apex-header p {
-    margin: 2px 0 0 0 !important;
-    font-size: clamp(0.72rem, 2.5vw, 0.85rem) !important;
-    color: rgba(255,255,255,0.8) !important;
+.apex-logo-text span {
+    color: var(--primary);
 }
 
 /* ── Upload indicator badge ── */
@@ -282,25 +288,25 @@ html, body, [data-testid="stAppViewContainer"],
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2.5rem 1.5rem;
+    padding: 1.2rem 1.5rem 1rem;
     text-align: center;
     background: #F4F4F8;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    margin: 1rem 0;
-    box-shadow: 0 2px 12px rgba(108,99,255,0.06);
+    margin: 0.4rem 0 0.8rem;
 }
-.welcome-card .big-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
+.welcome-card .big-icon { font-size: 2rem; margin-bottom: 0.4rem; }
 .welcome-card h2 {
-    font-size: clamp(1rem, 4vw, 1.3rem) !important;
+    font-size: clamp(0.95rem, 3vw, 1.1rem) !important;
     font-weight: 600 !important;
     color: var(--text) !important;
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0.25rem !important;
 }
 .welcome-card p {
     color: var(--text-muted) !important;
-    font-size: clamp(0.82rem, 3vw, 0.92rem) !important;
-    max-width: 400px;
+    font-size: clamp(0.78rem, 2.5vw, 0.85rem) !important;
+    max-width: 420px;
+    margin: 0 !important;
 }
 .chip-row {
     display: flex;
@@ -326,15 +332,15 @@ html, body, [data-testid="stAppViewContainer"],
     .main .block-container {
         padding: 0.6rem 0.5rem 5rem 0.5rem !important;
     }
-    .apex-header { padding: 12px 14px; gap: 10px; }
+    .apex-logo-bar { padding: 8px 4px; }
     [data-testid="stChatMessage"] { padding: 10px 12px !important; }
     .cap-list { grid-template-columns: 1fr; }
     [data-testid="stSidebar"] { width: 85vw !important; }
 }
 
 @media (max-width: 480px) {
-    .apex-header { flex-wrap: wrap; }
-    .apex-header .apex-icon { font-size: 1.6rem; }
+    .apex-logo-icon { width: 32px; height: 32px; font-size: 1rem; }
+    .apex-logo-text { font-size: 1rem; }
     .chip { font-size: 0.7rem; padding: 4px 10px; }
 }
 
@@ -468,14 +474,11 @@ with st.sidebar:
 # MAIN CHAT UI
 # ─────────────────────────────────────────────
 
-# Header
+# Logo bar
 st.markdown("""
-<div class="apex-header">
-  <span class="apex-icon">🤖</span>
-  <div>
-    <h1>APEX AI Agent</h1>
-    <p>Ask anything · Upload files · Write code · Create content</p>
-  </div>
+<div class="apex-logo-bar">
+  <div class="apex-logo-icon">🤖</div>
+  <div class="apex-logo-text"><span>APEX</span> AI Agent</div>
 </div>
 """, unsafe_allow_html=True)
 
