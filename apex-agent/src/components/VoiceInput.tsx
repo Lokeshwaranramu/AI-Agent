@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 
 // ── Types for Web Speech API ──
@@ -52,19 +52,37 @@ declare global {
   }
 }
 
+// ── Browser capability detection (SSR-safe) ──
+const noopSubscribe = () => () => {};
+
+function useSpeechRecognitionSupported() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+    () => false
+  );
+}
+
+function useSpeechSynthesisSupported() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => 'speechSynthesis' in window,
+    () => false
+  );
+}
+
 // ── Voice Input Hook ──
 export function useVoiceInput() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useSpeechRecognitionSupported();
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    setIsSupported(!!SpeechRecognition);
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
@@ -125,7 +143,7 @@ export function useVoiceInput() {
     try {
       recognitionRef.current.start();
       setIsListening(true);
-    } catch (e) {
+    } catch {
       // Already started — ignore
     }
   }, []);
@@ -167,12 +185,8 @@ export function useVoiceInput() {
 export function useTextToSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useSpeechSynthesisSupported();
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  useEffect(() => {
-    setIsSupported('speechSynthesis' in window);
-  }, []);
 
   const speak = useCallback((text: string) => {
     if (!('speechSynthesis' in window) || !ttsEnabled) return;

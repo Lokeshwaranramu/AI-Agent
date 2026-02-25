@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, RotateCcw, Zap, Loader2 } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { ToolOutput } from './ToolOutput';
+import { useVoiceInput, useTextToSpeech, VoiceButton, TtsToggle } from './VoiceInput';
 
 interface Message {
   id: string;
@@ -46,6 +47,10 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Voice hooks
+  const voice = useVoiceInput();
+  const tts = useTextToSpeech();
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -53,6 +58,15 @@ export function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, activeToolCalls, toolResults, scrollToBottom]);
+
+  // Sync voice transcript to input
+  const { transcript, resetTranscript } = voice;
+  useEffect(() => {
+    if (transcript) {
+      setInput((prev) => prev + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -188,6 +202,10 @@ export function ChatInterface() {
                     }
                     return prev;
                   });
+                  // Speak the final response if TTS is enabled
+                  if (assistantContent) {
+                    tts.speak(assistantContent);
+                  }
                   break;
               }
             } catch {
@@ -328,6 +346,13 @@ export function ChatInterface() {
               />
             </div>
 
+            <VoiceButton
+              isListening={voice.isListening}
+              isSupported={voice.isSupported}
+              onClick={voice.toggleListening}
+              disabled={isLoading}
+            />
+
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
@@ -350,9 +375,26 @@ export function ChatInterface() {
             </button>
           </div>
 
-          <p className="text-xs text-zinc-500 mt-2 text-center">
-            APEX uses Ollama locally. Press Enter to send, Shift+Enter for new line.
-          </p>
+          <div className="flex items-center justify-between mt-2">
+            <TtsToggle
+              ttsEnabled={tts.ttsEnabled}
+              isSpeaking={tts.isSpeaking}
+              isSupported={tts.isSupported}
+              onClick={tts.toggleTts}
+            />
+            <p className="text-xs text-zinc-500 text-center">
+              {voice.isListening ? (
+                <span className="text-red-400">🎙️ Listening... speak now</span>
+              ) : voice.error ? (
+                <span className="text-red-400">{voice.error}</span>
+              ) : voice.interimTranscript ? (
+                <span className="text-cyan-400 italic">{voice.interimTranscript}</span>
+              ) : (
+                'Press Enter to send, Shift+Enter for new line.'
+              )}
+            </p>
+            <div className="w-20" />
+          </div>
         </form>
       </div>
     </div>
